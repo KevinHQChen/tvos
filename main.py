@@ -94,7 +94,7 @@ def main(args):
                                                  shuffle=False,
                                                  sampler = val_sampler, 
                                                  pin_memory = True,
-                                                 num_workers=8 // dist.get_world_size(),
+                                                 num_workers=4 // dist.get_world_size(),
                                                  drop_last=True)
     else:
         raise NotImplementedError
