@@ -82,7 +82,7 @@ def main(args):
                                                    shuffle=False,
                                                    sampler = train_sampler, 
                                                    pin_memory = True,
-                                                   num_workers=8 // dist.get_world_size(),
+                                                   num_workers=4 // dist.get_world_size(),
                                                    drop_last=True)
         val_dataset = dataset.DavisTrain(os.path.join(args.data, 'DAVIS_val/JPEGImages/480p'),
                                          os.path.join(args.data, 'DAVIS_val/Annotations/480p'),
