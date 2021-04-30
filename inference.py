@@ -6,6 +6,10 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+import matplotlib.pyplot as plt
+import cv2
+from torchvision import transforms
+
 import dataset
 import modeling
 
@@ -36,6 +40,7 @@ parser.add_argument('--save', '-s', type=str,
 
 device = torch.device("cuda")
 
+savefigs = False
 
 def main():
     global args
@@ -61,7 +66,7 @@ def main():
     inference_loader = torch.utils.data.DataLoader(inference_dataset,
                                                    batch_size=1,
                                                    shuffle=False,
-                                                   num_workers=8)
+                                                   num_workers=4)
     inference(inference_loader, model, args)
 
 
@@ -88,17 +93,47 @@ def inference(inference_loader, model, args):
                 frame_idx = 0
                 print("End of video %d. Processing a new annotation..." % (last_video + 1))
             if frame_idx == 0:
+                (_, __, H, W) = input.shape
+                flow_history = np.zeros((3,H,W))
+                if savefigs: print('Input shape: {}'.format(input.shape))
+                # flow_history[0] = input.numpy()
+                # iinput = (input.squeeze() * 255).byte()
+                # cv2.imwrite('input.png', np.transpose(iinput.cpu().numpy(), (1,2,0)))
+
+                # move normalized input image to cpu, convert to numpy format, then grayscale
+                np_input = np.transpose(input.squeeze().numpy(), (1,2,0))
+                np_input_gray = cv2.cvtColor(np_input, cv2.COLOR_BGR2GRAY)
+                if savefigs: print('Grayscale input shape: {}'.format(np_input_gray.shape))
+                flow_history[0] = np_input_gray
+                flow_history[1] = np_input_gray
+                flow_history[2] = np_input_gray
+                # cv2.imwrite('input.png', sokka)
+                # plt.imsave('input.png', transforms.functional.to_pil_image(sokka))
+                # cv2.imwrite('input.png', img_original.squeeze().numpy().transpose((2,0,1)))
+
                 input = input.to(device)
+                if savefigs: print('Input type: {}'.format(type(input)))
                 with torch.no_grad():
                     feats_history = model(input)
-                label_history, d, palette, weight_dense, weight_sparse = prepare_first_frame(curr_video,
+                label_history, d, palette, weight_dense, weight_sparse, H, W = prepare_first_frame(curr_video,
                                                                                                  args.save,
                                                                                                  annotation_dir,
                                                                                                  args.sigma1,
                                                                                                  args.sigma2)
                 frame_idx += 1
                 last_video = curr_video
+
+                plt.imsave('local_spatial_prior.png', weight_dense.cpu().numpy())
+                plt.imsave('distant_spatial_prior.png', weight_sparse.cpu().numpy())
+
                 continue
+
+            np_input = np.transpose(input.squeeze().numpy(), (1,2,0))
+            np_input_gray = cv2.cvtColor(np_input, cv2.COLOR_BGR2GRAY)
+            flow_history[0] = flow_history[1]
+            flow_history[1] = flow_history[2]
+            flow_history[2] = np_input_gray
+
             (batch_size, num_channels, H, W) = input.shape
             input = input.to(device)
 
@@ -108,6 +143,7 @@ def inference(inference_loader, model, args):
             prediction = predict(feats_history,
                                  features[0],
                                  label_history,
+                                 flow_history,
                                  weight_dense,
                                  weight_sparse,
                                  frame_idx,

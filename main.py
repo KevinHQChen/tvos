@@ -84,6 +84,9 @@ def main(args):
                                                    pin_memory = True,
                                                    num_workers=4 // dist.get_world_size(),
                                                    drop_last=True)
+
+        logger.info("Dataset size: {}".format(len(train_dataset)))
+
         val_dataset = dataset.DavisTrain(os.path.join(args.data, 'DAVIS_val/JPEGImages/480p'),
                                          os.path.join(args.data, 'DAVIS_val/Annotations/480p'),
                                          frame_num=args.frame_num,
@@ -172,6 +175,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         features = model(img_input)
         feature_dim = features.shape[1]
         features = features.reshape(batch_size, num_frames, feature_dim, H_d, W_d)
+
+        logger.info('Feature dimensions: {}\t'.format(feature_dim))
 
         ref = features[:, 0:num_frames - 1, :, :, :]
         target = features[:, -1, :, :, :]
