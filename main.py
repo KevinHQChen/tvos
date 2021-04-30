@@ -150,6 +150,12 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         data_time.update(time.time() - end)
 
         (batch_size, num_frames, num_channels, H, W) = img_input.shape
+        ####################
+        logger.info('Input shape --- Batch Size: {0}\t'
+                'Num frames: {1}\t'
+                'Num channels: {2}\t'
+                'H x W: {3}x{4}\t'.format(batch_size, num_frames, num_channels, H, W))
+        ####################
         annotation_input = annotation_input.reshape(-1, 3, H, W).cuda()
         annotation_input_downsample = torch.nn.functional.interpolate(annotation_input,
                                                                       scale_factor=SCALE,
