@@ -170,8 +170,8 @@ def get_spatial_weight(shape, sigma):
 
 def get_flow_weight(H, W, flow_history, sigma):
     # optical flow
-    curr_flow = cv2.calcOpticalFlowFarneback(flow_history[1],flow_history[2],None, 0.5, 3, 15, 3, 5, 1.2, 0)
-    prev_flow = cv2.calcOpticalFlowFarneback(flow_history[0],flow_history[1],None, 0.5, 3, 15, 3, 5, 1.2, 0)
+    curr_flow = cv2.calcOpticalFlowFarneback(flow_history[1],flow_history[2],None, 0.5, 3, 15, 5, 5, 1.2, 0)
+    prev_flow = cv2.calcOpticalFlowFarneback(flow_history[0],flow_history[1],None, 0.5, 3, 15, 5, 5, 1.2, 0)
 
     H_d = int(np.ceil(H / 8))
     W_d = int(np.ceil(W / 8))
