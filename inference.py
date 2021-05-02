@@ -96,9 +96,6 @@ def inference(inference_loader, model, args):
                 (_, __, H, W) = input.shape
                 flow_history = np.zeros((3,H,W))
                 if savefigs: print('Input shape: {}'.format(input.shape))
-                # flow_history[0] = input.numpy()
-                # iinput = (input.squeeze() * 255).byte()
-                # cv2.imwrite('input.png', np.transpose(iinput.cpu().numpy(), (1,2,0)))
 
                 # move normalized input image to cpu, convert to numpy format, then grayscale
                 np_input = np.transpose(input.squeeze().numpy(), (1,2,0))
@@ -107,9 +104,6 @@ def inference(inference_loader, model, args):
                 flow_history[0] = np_input_gray
                 flow_history[1] = np_input_gray
                 flow_history[2] = np_input_gray
-                # cv2.imwrite('input.png', sokka)
-                # plt.imsave('input.png', transforms.functional.to_pil_image(sokka))
-                # cv2.imwrite('input.png', img_original.squeeze().numpy().transpose((2,0,1)))
 
                 input = input.to(device)
                 if savefigs: print('Input type: {}'.format(type(input)))
@@ -123,8 +117,8 @@ def inference(inference_loader, model, args):
                 frame_idx += 1
                 last_video = curr_video
 
-                plt.imsave('local_spatial_prior.png', weight_dense.cpu().numpy())
-                plt.imsave('distant_spatial_prior.png', weight_sparse.cpu().numpy())
+                if savefigs: plt.imsave('local_spatial_prior.png', weight_dense.cpu().numpy())
+                if savefigs: plt.imsave('distant_spatial_prior.png', weight_sparse.cpu().numpy())
 
                 continue
 

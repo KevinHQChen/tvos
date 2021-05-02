@@ -72,8 +72,6 @@ def predict(ref,
     else:
         # dense spatial prior on recent frames (most recent 4 continuous frames)
         global_similarity = global_similarity.mul(weight_dense)
-        # flow weight on most recent frame
-        global_similarity[-1] *= flow_weight
 
         if savefigs: print('global similarity shape at previous frame: {}'.format(global_similarity[-1].shape))
 
