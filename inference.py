@@ -94,22 +94,13 @@ def inference(inference_loader, model, args):
                 print("End of video %d. Processing a new annotation..." % (last_video + 1))
             if frame_idx == 0:
                 (_, __, H, W) = input.shape
-                flow_history = np.zeros((3,H,W))
+                flow_history = np.zeros((3,H,W,3), dtype=np.uint8)
                 if savefigs: print('Input shape: {}'.format(input.shape))
-                # flow_history[0] = input.numpy()
-                # iinput = (input.squeeze() * 255).byte()
-                # cv2.imwrite('input.png', np.transpose(iinput.cpu().numpy(), (1,2,0)))
 
-                # move normalized input image to cpu, convert to numpy format, then grayscale
-                np_input = np.transpose(input.squeeze().numpy(), (1,2,0))
-                np_input_gray = cv2.cvtColor(np_input, cv2.COLOR_BGR2GRAY)
-                if savefigs: print('Grayscale input shape: {}'.format(np_input_gray.shape))
-                flow_history[0] = np_input_gray
-                flow_history[1] = np_input_gray
-                flow_history[2] = np_input_gray
-                # cv2.imwrite('input.png', sokka)
-                # plt.imsave('input.png', transforms.functional.to_pil_image(sokka))
-                # cv2.imwrite('input.png', img_original.squeeze().numpy().transpose((2,0,1)))
+                # curr frame and last 2 frames are used for flow difference calculation
+                flow_history[0] = img_original.numpy().astype(np.uint8)
+                flow_history[1] = img_original.numpy().astype(np.uint8)
+                flow_history[2] = img_original.numpy().astype(np.uint8)
 
                 input = input.to(device)
                 if savefigs: print('Input type: {}'.format(type(input)))
@@ -123,16 +114,14 @@ def inference(inference_loader, model, args):
                 frame_idx += 1
                 last_video = curr_video
 
-                plt.imsave('local_spatial_prior.png', weight_dense.cpu().numpy())
-                plt.imsave('distant_spatial_prior.png', weight_sparse.cpu().numpy())
+                if savefigs: plt.imsave('local_spatial_prior.png', weight_dense.cpu().numpy())
+                if savefigs: plt.imsave('distant_spatial_prior.png', weight_sparse.cpu().numpy())
 
                 continue
 
-            np_input = np.transpose(input.squeeze().numpy(), (1,2,0))
-            np_input_gray = cv2.cvtColor(np_input, cv2.COLOR_BGR2GRAY)
             flow_history[0] = flow_history[1]
             flow_history[1] = flow_history[2]
-            flow_history[2] = np_input_gray
+            flow_history[2] = img_original.numpy().astype(np.uint8)
 
             (batch_size, num_channels, H, W) = input.shape
             input = input.to(device)

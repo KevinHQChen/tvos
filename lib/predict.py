@@ -52,9 +52,9 @@ def predict(ref,
 
     if savefigs: print('Appearance prior shape after softmax: {}'.format(global_similarity.shape))
 
-    (H_, W_) = flow_history[2].shape
+    (H_, W_, ___) = flow_history[2].shape
     # optical flow
-    flow_weight = get_flow_weight(H_, W_, flow_history, sigma=0.001)
+    flow_weight = get_flow_weight(H_, W_, flow_history, sigma=1)
 
     # spatial weight and motion model
     global_similarity = global_similarity.contiguous().view(num_ref, H * W, H * W)
@@ -72,8 +72,6 @@ def predict(ref,
     else:
         # dense spatial prior on recent frames (most recent 4 continuous frames)
         global_similarity = global_similarity.mul(weight_dense)
-        # flow weight on most recent frame
-        global_similarity[-1] *= flow_weight
 
         if savefigs: print('global similarity shape at previous frame: {}'.format(global_similarity[-1].shape))
 
@@ -170,8 +168,8 @@ def get_spatial_weight(shape, sigma):
 
 def get_flow_weight(H, W, flow_history, sigma):
     # optical flow
-    curr_flow = cv2.calcOpticalFlowFarneback(flow_history[1],flow_history[2],None, 0.5, 3, 15, 3, 5, 1.2, 0)
-    prev_flow = cv2.calcOpticalFlowFarneback(flow_history[0],flow_history[1],None, 0.5, 3, 15, 3, 5, 1.2, 0)
+    curr_flow = cv2.optflow.calcOpticalFlowDenseRLOF(flow_history[1],flow_history[2],None, *[])
+    prev_flow = cv2.optflow.calcOpticalFlowDenseRLOF(flow_history[0],flow_history[1],None, *[])
 
     H_d = int(np.ceil(H / 8))
     W_d = int(np.ceil(W / 8))
